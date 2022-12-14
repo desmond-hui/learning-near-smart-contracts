@@ -1,0 +1,12 @@
+{
+  "name": "near-course-marketplace-dapp",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "devDependencies": {
+    "near-sdk-as": "^3.2.3"
+  },
+  "dependencies": {
+    "assemblyscript": "^0.19.23"
+  }
+}
