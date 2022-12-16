@@ -8,6 +8,9 @@
   },
   "dependencies": {
     "asbuild": "^0.2.0",
-    "assemblyscript": "^0.19.23"
+    "assemblyscript": "^0.19.23",
+    "near-api-js": "^1.1.0",
+    "react-scripts": "^4.0.3",
+    "uuid": "^9.0.0"
   }
 }
