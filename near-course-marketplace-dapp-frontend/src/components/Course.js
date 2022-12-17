@@ -1,15 +1,29 @@
+import { purchaseCourse } from '../utils/courses';
+
 const Course = ({ course }) => {
+  const buyButtonPressed = async (courseId, price) => {
+    try {
+      await purchaseCourse({
+        courseId,
+        price,
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
-    const { id, name } = course;
+  return (
+    <div>
+      <h3>Course Name: {course.name}</h3>
+      <h3>Course ID: {course.id}</h3>
+      <h3>Course Price: {course.price}</h3>
+      <h3>Course Owner: {course.owner}</h3>
 
-    return (
-        <div>
-
-            <h3>Course Name: {name}</h3>
-            <h4>Course ID: {id}</h4>
-
-        </div>
-    );
+      <button onClick={() => buyButtonPressed(course.id, course.price)}>
+        Buy Now
+      </button>
+    </div>
+  );
 };
 
 export default Course;
