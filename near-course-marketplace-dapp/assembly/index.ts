@@ -1,11 +1,18 @@
-import { PersistentUnorderedMap } from "near-sdk-as";
+import { MapEntry, PersistentUnorderedMap } from "near-sdk-as";
+import {Course, listedCourses} from "./model";
 
-export const courses = new PersistentUnorderedMap<string,string>("COURSES");
-
-export function addCourse(id: string, name: string): void {
-  courses.set(id, name);
+export function addCourse(course: Course): void {
+  if (listedCourses.get(course.id) === null) {
+    listedCourses.set(course.id, Course.fromPayload(course));
+  } else {
+    throw new Error("Course already exists at id " + course.id);
+  }
 }
 
-export function getCourse(id: string): string | null {
-  return courses.get(id);
+export function getCourse(course: Course): Course | null {
+  return listedCourses.get(course.id);
+}
+
+export function getCourses(): Course[] {
+  return listedCourses.values();
 }

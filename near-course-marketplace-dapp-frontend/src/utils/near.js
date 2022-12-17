@@ -24,12 +24,19 @@ export async function connectToContract() {
         window.walletConnection.account(),
         nearEnvironment.contractName,
         {
-            viewMethods: ["getCourse"],
+            viewMethods: ["getCourse", "getCourses"],
             changeMethods: ["addCourse"]
         }
-    );
-
-    console.log(window.contract);
+    ); 
 } 
+
+export function signIn() {
+    window.walletConnection.requestSignIn(nearEnvironment.contractName);
+}
+
+export function signOut() {
+    window.walletConnection.signOut();
+    window.location.reload();
+}
 
 export default connectToContract;
