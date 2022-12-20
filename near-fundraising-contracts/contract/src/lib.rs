@@ -3,6 +3,8 @@ use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::{log, near_bindgen, AccountId, env};
 use near_sdk::collections::{UnorderedMap};
 
+mod pledge;
+
 const DEFAULT_MESSAGE: &str = "Hello";
 
 #[near_bindgen]
@@ -32,6 +34,15 @@ impl Contract {
             fundraiser: fundraiser_init,
             pledges: UnorderedMap::new(b"p")
         }
+    }
+
+    pub fn get_fundraiser(&self) -> AccountId {
+        self.fundraiser.clone()
+    }
+
+    #[private]
+    pub fn set_fundraiser(&mut self, new_fundraiser: AccountId) {
+        self.fundraiser = new_fundraiser;
     }
 }
 
