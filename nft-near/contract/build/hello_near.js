@@ -34,6 +34,14 @@ var PromiseError;
   PromiseError[PromiseError["NotReady"] = 1] = "NotReady";
 })(PromiseError || (PromiseError = {}));
 
+function assert(b, str) {
+  if (b) {
+    return;
+  } else {
+    throw Error("assertion failed: " + str);
+  }
+}
+
 /*! scure-base - MIT License (c) 2022 Paul Miller (paulmillr.com) */
 function assertNumber(n) {
   if (!Number.isSafeInteger(n)) throw new Error(`Wrong integer: ${n}`);
@@ -351,6 +359,13 @@ var CurveType;
 
 const U64_MAX = 2n ** 64n - 1n;
 const EVICTED_REGISTER = U64_MAX - 1n;
+function predecessorAccountId() {
+  env.predecessor_account_id(0);
+  return env.read_register(0);
+}
+function attachedDeposit() {
+  return env.attached_deposit();
+}
 function storageRead(key) {
   let ret = env.storage_read(key, 0);
   if (ret === 1n) {
@@ -369,6 +384,10 @@ function storageHasKey(key) {
 }
 function storageGetEvicted() {
   return env.read_register(EVICTED_REGISTER);
+}
+function currentAccountId() {
+  env.current_account_id(0);
+  return env.read_register(0);
 }
 function input() {
   env.input(0);
@@ -391,6 +410,23 @@ function storageRemove(key) {
 
 function initialize({}) {
   return function (target, key, descriptor) {};
+}
+function call({
+  privateFunction = false,
+  payableFunction = false
+}) {
+  return function (target, key, descriptor) {
+    const originalMethod = descriptor.value;
+    descriptor.value = function (...args) {
+      if (privateFunction && predecessorAccountId() !== currentAccountId()) {
+        throw Error("Function is private");
+      }
+      if (!payableFunction && attachedDeposit() > BigInt(0)) {
+        throw Error("Function is not payable");
+      }
+      return originalMethod.apply(this, args);
+    };
+  };
 }
 function NearBindgen({
   requireInit = false
@@ -478,8 +514,16 @@ class LookupMap {
   }
 }
 
-var _dec, _dec2, _class, _class2;
-let AltanNFTContract = (_dec = NearBindgen({}), _dec2 = initialize({}), _dec(_class = (_class2 = class AltanNFTContract {
+var _dec, _dec2, _dec3, _class, _class2;
+
+// 
+class Token {
+  constructor(token_id, owner_id) {
+    this.token_id = token_id;
+    this.owner_id = owner_id;
+  }
+}
+let AltanNFTContract = (_dec = NearBindgen({}), _dec2 = initialize({}), _dec3 = call({}), _dec(_class = (_class2 = class AltanNFTContract {
   constructor() {
     this.owner_id = "";
     this.owner_by_id = new LookupMap("o");
@@ -492,7 +536,33 @@ let AltanNFTContract = (_dec = NearBindgen({}), _dec2 = initialize({}), _dec(_cl
     this.owner_id = owner_id;
     this.owner_by_id = new LookupMap(owner_by_id_prefix);
   }
-}, (_applyDecoratedDescriptor(_class2.prototype, "init", [_dec2], Object.getOwnPropertyDescriptor(_class2.prototype, "init"), _class2.prototype)), _class2)) || _class);
+  mint_nft({
+    token_id,
+    token_owner_id
+  }) {
+    // Sender must be the same as the token_owner_id
+    assert(predecessorAccountId() === this.owner_id, "Unauthorized to mint");
+
+    // Token should not exist
+    assert(this.owner_by_id.get(token_id) === null, "Token already exists");
+    this.owner_by_id.set(token_id, token_owner_id);
+    return new Token(token_id, token_owner_id);
+  }
+}, (_applyDecoratedDescriptor(_class2.prototype, "init", [_dec2], Object.getOwnPropertyDescriptor(_class2.prototype, "init"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "mint_nft", [_dec3], Object.getOwnPropertyDescriptor(_class2.prototype, "mint_nft"), _class2.prototype)), _class2)) || _class);
+function mint_nft() {
+  let _state = AltanNFTContract._getState();
+  if (!_state && AltanNFTContract._requireInit()) {
+    throw new Error("Contract must be initialized");
+  }
+  let _contract = AltanNFTContract._create();
+  if (_state) {
+    AltanNFTContract._reconstruct(_contract, _state);
+  }
+  let _args = AltanNFTContract._getArgs();
+  let _result = _contract.mint_nft(_args);
+  AltanNFTContract._saveToStorage(_contract);
+  if (_result !== undefined) if (_result && _result.constructor && _result.constructor.name === "NearPromise") _result.onReturn();else env.value_return(AltanNFTContract._serialize(_result));
+}
 function init() {
   let _state = AltanNFTContract._getState();
   if (_state) throw new Error("Contract already initialized");
@@ -503,5 +573,5 @@ function init() {
   if (_result !== undefined) if (_result && _result.constructor && _result.constructor.name === "NearPromise") _result.onReturn();else env.value_return(AltanNFTContract._serialize(_result));
 }
 
-export { init };
+export { init, mint_nft };
 //# sourceMappingURL=hello_near.js.map
