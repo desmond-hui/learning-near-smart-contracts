@@ -1,0 +1,4 @@
+DEFINE_NEAR_METHOD(getBalance)
+DEFINE_NEAR_METHOD(getTotalSupply)
+DEFINE_NEAR_METHOD(init)
+DEFINE_NEAR_METHOD(transferTokens)
